@@ -278,7 +278,7 @@ if (path == "" || path.endsWith(".html")) {
   }
 }
 Alpine.store("code").setPath(path);
-let docId = "P2-2024-" + path;
+let docId = "pweb-2026-" + path;
 const docRef = doc(db, "code", docId);
 console.log(`Listening Firestore doc: code/${docId}`);
 

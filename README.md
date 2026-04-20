@@ -7,7 +7,7 @@ Web viewer untuk menampilkan source code secara realtime dari Firestore mengguna
 Proyek ini terdiri dari 2 bagian utama:
 
 - Root project (viewer): aplikasi web statis yang menampilkan file dari Firestore.
-- Sync tool: watcher Node.js di folder [firebase-workspace-sync-extension](firebase-workspace-sync-extension) untuk upload perubahan file lokal ke Firestore.
+- Sync tool: watcher Node.js di folder [tools/firebase-workspace-sync](tools/firebase-workspace-sync) untuk upload perubahan file lokal ke Firestore.
 
 Alur kerja:
 
@@ -17,11 +17,11 @@ Alur kerja:
 
 ## Struktur Folder
 
-- [index.html](index.html): layout utama viewer.
-- [main.js](main.js): logika explorer file, Monaco Editor, dan listener Firestore.
-- [style.css](style.css): styling UI viewer.
-- [firebase-config.js](firebase-config.js): konfigurasi Firebase client (harus dibuat lokal, jangan di-commit).
-- [firebase-workspace-sync-extension](firebase-workspace-sync-extension): tool sinkronisasi folder lokal ke Firestore.
+- [apps/viewer/index.html](apps/viewer/index.html): layout utama viewer.
+- [apps/viewer/main.js](apps/viewer/main.js): logika explorer file, Monaco Editor, dan listener Firestore.
+- [apps/viewer/style.css](apps/viewer/style.css): styling UI viewer.
+- [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js): konfigurasi Firebase client (harus dibuat lokal, jangan di-commit).
+- [tools/firebase-workspace-sync](tools/firebase-workspace-sync): tool sinkronisasi folder lokal ke Firestore.
 
 ## Prasyarat
 
@@ -31,7 +31,7 @@ Alur kerja:
 
 ## Setup Viewer (Root)
 
-1. Buat file [firebase-config.js](firebase-config.js) di root dengan format berikut:
+1. Buat/isi file [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) dengan format berikut:
 
 ```js
 export const firebaseConfig = {
@@ -44,19 +44,11 @@ export const firebaseConfig = {
 };
 ```
 
-2. Pastikan file [firebase-config.js](firebase-config.js) tetap di-ignore Git (sudah diatur di [.gitignore](.gitignore)).
+2. Pastikan file [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) tetap di-ignore Git.
 
 ## Jalankan Viewer
 
-Karena viewer adalah web statis, jalankan dengan static server apa saja. Contoh:
-
-```bash
-# opsi 1 (npm package)
-npx serve .
-
-# opsi 2 (python)
-python -m http.server 8080
-```
+Download Live Server Ekstensi di VSC.
 
 Lalu buka URL server di browser.
 
@@ -64,7 +56,7 @@ Path default yang dipakai viewer adalah `folder_project`.
 
 ## Setup & Jalankan Realtime Sync Tool
 
-Masuk ke folder [firebase-workspace-sync-extension](firebase-workspace-sync-extension) lalu:
+Masuk ke folder [tools/firebase-workspace-sync](tools/firebase-workspace-sync) lalu:
 
 ```bash
 npm install
@@ -72,26 +64,72 @@ npm run quick
 ```
 
 Setup service account detail tersedia di:
-- [firebase-workspace-sync-extension/README.md](firebase-workspace-sync-extension/README.md)
+- [tools/firebase-workspace-sync/README.md](tools/firebase-workspace-sync/README.md)
+
+## Setup Deploy ke Surge
+
+Surge dipakai untuk deploy cepat web statis (viewer) ke URL publik.
+
+1. Install Surge CLI (global):
+
+```bash
+npm install --global surge
+```
+
+2. Login atau daftar akun:
+
+```bash
+surge
+```
+
+3. Deploy dari root project ke folder viewer:
+
+```bash
+surge apps/viewer nama-domainmu.surge.sh
+```
+
+Contoh:
+
+```bash
+surge apps/viewer uisi-pweb-2026.surge.sh
+```
+
+4. Update deployment:
+
+```bash
+surge apps/viewer uisi-pweb-2026.surge.sh
+```
+
+5. Hapus deployment jika sudah tidak dipakai:
+
+```bash
+surge teardown uisi-pweb-2026.surge.sh
+```
+
+Catatan penting:
+
+- Pastikan [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) sudah terisi valid sebelum deploy.
+- Jika deploy dari folder lain, gunakan path folder yang berisi [apps/viewer/index.html](apps/viewer/index.html).
+- Untuk custom domain, ikuti prompt Surge setelah proses publish.
 
 Dokumen Firestore default yang dipakai sync tool:
-- `code/P2-2024-folder_project`
-- `code_meta/P2-2024-folder_project`
+- `code/pweb-2026-folder_project`
+- `code_meta/pweb-2026-folder_project`
 
 ## Konvensi Data Firestore
 
 Viewer akan membaca dokumen dengan format:
 
 - Collection: `code`
-- Document ID: `P2-2024-{path}`
+- Document ID: `pweb-2026-{path}`
 
 Contoh jika path `folder_project`, maka dokumen yang dibaca adalah:
-- `code/P2-2024-folder_project`
+- `code/pweb-2026-folder_project`
 
 ## Catatan Keamanan
 
 - Jangan commit credential sensitif seperti Firebase service account.
-- Jangan publish nilai rahasia dari [firebase-config.js](firebase-config.js) di repositori publik.
+- Jangan publish nilai rahasia dari [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) di repositori publik.
 
 ## Troubleshooting
 
@@ -102,4 +140,4 @@ Contoh jika path `folder_project`, maka dokumen yang dibaca adalah:
   - Pastikan sync tool berjalan.
   - Pastikan dokumen Firestore untuk path yang dibuka memang ada.
 - Jika listener gagal inisialisasi:
-  - Cek semua field wajib di [firebase-config.js](firebase-config.js).
+  - Cek semua field wajib di [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js).

@@ -13,7 +13,7 @@ Tool ini adalah watcher Node sederhana untuk sinkronisasi folder_project ke Fire
 
 1. Masuk folder ini:
 
-   cd firebase-workspace-sync-extension
+   cd tools/firebase-workspace-sync
 
 2. Install dependensi:
 
@@ -46,8 +46,8 @@ Git Bash:
 
 ## Lokasi dokumen default
 
-- code/P2-2024-folder_project
-- metadata: code_meta/P2-2024-folder_project
+- code/pweb-2026-folder_project
+- metadata: code_meta/pweb-2026-folder_project
 
 ## Variabel opsional
 

@@ -16,7 +16,7 @@ const serviceAccountPath =
   process.env.FIREBASE_SERVICE_ACCOUNT_PATH || defaultServiceAccountPath;
 const codeCollection = process.env.FIRESTORE_COLLECTION || 'code';
 const metaCollection = process.env.FIRESTORE_META_COLLECTION || 'code_meta';
-const docId = process.env.FIRESTORE_DOC_ID || 'P2-2024-folder_project';
+const docId = process.env.FIRESTORE_DOC_ID || 'pweb-2026-folder_project';
 
 const ignore = [
   '**/node_modules/**',
