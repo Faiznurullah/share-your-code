@@ -18,6 +18,7 @@ document.addEventListener("copy", function (e) {
   e.clipboardData.setData("text/html", "");
   e.preventDefault();
 });
+
 const explorer = document.querySelector("#explorer");
 
 explorer.addEventListener("click", (event) => {
