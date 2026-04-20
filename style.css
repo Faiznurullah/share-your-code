@@ -1,0 +1,69 @@
+#filename {
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+#filename:before {
+  content: "> ";
+}
+
+#explorer {
+  list-style: none;
+  padding: 0;
+  overflow: auto;
+  min-width: 300px;
+}
+
+#explorer li {
+  margin: 10px 5px 10px -7px;
+  cursor: pointer;
+  color: grey;
+}
+
+#explorer li ul li {
+  margin-left: -10px;
+}
+
+#explorer li.folder > ul {
+  display: none;
+}
+#explorer li.file {
+  list-style-type: none;
+}
+#explorer li.folder {
+  list-style-type: "> ";
+}
+#explorer li.folder.open {
+  list-style-type: none;
+}
+
+#explorer li.folder.open:before {
+  content: ">";
+  display: inline-block;
+  margin-left: -2ch;
+  margin-right: 1ch;
+  transform: rotate(90deg);
+}
+
+#explorer li.folder > ul.open {
+  display: block;
+}
+
+#explorer li.file.open {
+  font-weight: bold;
+  color: white;
+}
+
+#explorer li.file:before {
+  content: "\ea7b";
+  font-family: "codicon";
+  margin-left: -20px;
+  margin-right: 5px;
+  vertical-align: -2px;
+}
+
+#explorer li.file.code:before {
+  content: "\eac4";
+}

@@ -1,0 +1,2 @@
+# Local Firebase config (contains sensitive keys)
+firebase-config.js

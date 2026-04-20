@@ -1,0 +1,16 @@
+{
+  "name": "firebase-workspace-quick-sync",
+  "description": "Quick watcher to sync folder_project to Firestore in realtime.",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./quick-sync.js",
+  "scripts": {
+    "check": "node --check quick-sync.js",
+    "quick": "node quick-sync.js"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "fast-glob": "^3.3.3",
+    "firebase-admin": "^13.0.2"
+  }
+}
