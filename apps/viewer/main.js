@@ -1,12 +1,17 @@
 import * as monaco from "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/+esm";
 
-const editor = monaco.editor.create(document.querySelector("#editor"), {
+const editorElement = document.querySelector("#editor");
+const filenameElement = document.querySelector("#filename");
+const explorer = document.querySelector("#explorer");
+
+const editor = monaco.editor.create(editorElement, {
   fontSize: "16px",
   readOnly: true,
   contextmenu: false,
   automaticLayout: true,
   minimap: { enabled: false },
 });
+monaco.editor.setTheme("vs-dark");
 
 document.querySelectorAll("textarea").forEach((textarea) => {
   textarea.setAttribute("readonly", "readonly");
@@ -19,22 +24,31 @@ document.addEventListener("copy", function (e) {
   e.preventDefault();
 });
 
-const explorer = document.querySelector("#explorer");
+function markActiveFile(filename) {
+  explorer.querySelectorAll("li.file.open").forEach((file) => {
+    file.classList.remove("open");
+  });
+
+  const fileElem = document.getElementById(filename);
+  if (fileElem) {
+    fileElem.classList.add("open");
+  }
+}
 
 explorer.addEventListener("click", (event) => {
-  const target = event.target;
+  const target = event.target.closest("li.folder, li.file");
+  if (!target || !explorer.contains(target)) {
+    return;
+  }
 
   if (target.classList.contains("folder")) {
     target.classList.toggle("open");
-    target.querySelector("ul").classList.toggle("open");
+    const nestedList = target.querySelector("ul");
+    if (nestedList) {
+      nestedList.classList.toggle("open");
+    }
   } else if (target.classList.contains("file")) {
-    target.classList.add("open");
     Alpine.store("code").switchTab(target.getAttribute("id"));
-    explorer.querySelectorAll(".file").forEach((file) => {
-      if (file != target) {
-        file.classList.remove("open");
-      }
-    });
   }
 });
 
@@ -65,24 +79,22 @@ function generateExplorer(data, className) {
 
   for (let i = 0; i < data.length; i++) {
     const li = document.createElement("li");
+    const node = data[i];
 
-    li.textContent = data[i].text;
+    li.textContent = node.text;
+    li.title = node.text;
 
-    if (data[i].href) {
-      li.href = data[i].href;
-    }
-
-    if (data[i].nodes) {
-      if (data[i].text == "lib") {
+    if (node.nodes) {
+      if (node.text === "lib") {
         li.className = "folder";
-        li.appendChild(generateExplorer(data[i].nodes, ""));
+        li.appendChild(generateExplorer(node.nodes, ""));
       } else {
         li.className = "folder open";
-        li.appendChild(generateExplorer(data[i].nodes, "open"));
+        li.appendChild(generateExplorer(node.nodes, "open"));
       }
     } else {
       li.className = "file";
-      li.setAttribute("id", data[i].id);
+      li.setAttribute("id", node.id);
       li.setAttribute("data-bs-dismiss", "offcanvas");
       li.setAttribute("data-bs-target", "#sidebar");
       if (li.textContent.endsWith(".java")) {
@@ -97,7 +109,6 @@ function generateExplorer(data, className) {
 }
 
 function updateExplorer(data) {
-  const explorer = document.getElementById("explorer");
   explorer.innerHTML = "";
   explorer.appendChild(generateExplorer(data));
 }
@@ -124,10 +135,10 @@ function sortCodes(codes) {
 
 function getTree(codes) {
   const paths = Object.keys(codes);
-  let result = paths.reduce((r, p) => {
-    var names = p.split("/");
+  const result = paths.reduce((r, p) => {
+    const names = p.split("/");
     names.reduce((q, text) => {
-      var temp = q.find((o) => o.text === text);
+      let temp = q.find((o) => o.text === text);
       if (!temp) q.push((temp = { text, nodes: [], id: p }));
       return temp.nodes;
     }, r);
@@ -137,7 +148,6 @@ function getTree(codes) {
     result[i] = simplify(result[i]);
   }
   sortTree(result);
-  console.log(result);
   return result;
 }
 
@@ -203,28 +213,45 @@ Alpine.store("code", {
     newCode = sortCodes(newCode);
     this.codes = newCode;
 
-    if (this.activeTab == "" || !(this.activeTab in newCode)) {
+    if (Object.keys(newCode).length === 0) {
+      this.activeTab = "";
+      updateExplorer([]);
+      editor.getModel().setValue("");
+      if (filenameElement) {
+        filenameElement.textContent = "Belum ada file pada dokumen Firestore ini.";
+      }
+      return;
+    }
+
+    if (this.activeTab === "" || !(this.activeTab in newCode)) {
       for (let filename in newCode) {
         if (filename.endsWith(".java")) {
           this.activeTab = filename;
           break;
         }
       }
+
+      if (this.activeTab === "") {
+        this.activeTab = Object.keys(newCode)[0];
+      }
     }
 
     updateExplorer(getTree(newCode));
-    console.log(newCode);
     this.switchTab(this.activeTab);
   },
   switchTab(filename) {
-    this.activeTab = filename;
-    const fileElem = document.getElementById(filename);
-    if (!fileElem.classList.contains("open")) {
-      fileElem.classList.add("open");
+    if (!filename || !(filename in this.codes)) {
+      return;
     }
+
+    this.activeTab = filename;
+
+    markActiveFile(filename);
+
+    const model = editor.getModel();
     const language = detectLanguage(filename);
-    monaco.editor.setModelLanguage(editor.getModel(), language);
-    editor.getModel().setValue(this.codes[filename]);
+    monaco.editor.setModelLanguage(model, language);
+    model.setValue(this.codes[filename]);
   },
   save() {
     this.codes[this.activeTab] = editor.getValue();
@@ -267,25 +294,21 @@ const app = initializeApp(firebaseConfig);
 // Init Firestore
 const db = getFirestore(app);
 
-let url = new URL(window.location.href);
-let path = url.pathname.substr(1);
-let qs = url.searchParams.get("p");
-if (path == "" || path.endsWith(".html")) {
-  if (qs != null) {
-    path = qs;
-  } else {
-    path = "folder_project";
-  }
-}
+const url = new URL(window.location.href);
+const rawPath = (url.searchParams.get("p") || "").trim();
+
+// Firestore doc id segment tidak boleh mengandung '/'.
+const isValidPath = rawPath !== "" && !rawPath.includes("/");
+const path = isValidPath ? rawPath : "folder_project";
+
 Alpine.store("code").setPath(path);
-let docId = "pweb-2026-" + path;
+const docId = "pweb-2026-" + path;
 const docRef = doc(db, "code", docId);
 console.log(`Listening Firestore doc: code/${docId}`);
 
-const unsub = onSnapshot(
+onSnapshot(
   docRef,
   (docSnapshot) => {
-    console.log("Current data: ", docSnapshot.data());
     let latestCode = docSnapshot.data();
     if (!latestCode) {
       latestCode = {};
