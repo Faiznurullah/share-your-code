@@ -4,8 +4,8 @@ Tool ini adalah watcher Node sederhana untuk sinkronisasi folder_project ke Fire
 
 ## Cara kerja
 
-- Memantau perubahan file di folder_project.
-- Saat file berubah, semua isi folder_project di-upload ulang ke Firestore.
+- Memantau perubahan file di [folder_project](folder_project).
+- Saat file berubah, semua isi [folder_project](folder_project) di-upload ulang ke Firestore.
 - Tekan r di terminal untuk paksa upload ulang penuh kapan saja.
 - Tekan q untuk keluar.
 
@@ -13,7 +13,7 @@ Tool ini adalah watcher Node sederhana untuk sinkronisasi folder_project ke Fire
 
 1. Masuk folder ini:
 
-   cd tools/firebase-workspace-sync
+   cd tools
 
 2. Install dependensi:
 
@@ -54,10 +54,10 @@ Git Bash:
 - FIRESTORE_COLLECTION
 - FIRESTORE_META_COLLECTION
 - FIRESTORE_DOC_ID
-- SOURCE_DIR
+- SOURCE_DIR (default: tools/folder_project)
 
 ## Catatan
 
-- Simpan file yang ingin dibagikan di folder_project.
+- Simpan file yang ingin dibagikan di [folder_project](folder_project).
 - Semua file dibaca sebagai UTF-8 text.
 - Untuk demo kelas, service account jangan dibagikan ke publik.

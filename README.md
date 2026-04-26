@@ -7,21 +7,22 @@ Web viewer untuk menampilkan source code secara realtime dari Firestore mengguna
 Proyek ini terdiri dari 2 bagian utama:
 
 - Root project (viewer): aplikasi web statis yang menampilkan file dari Firestore.
-- Sync tool: watcher Node.js di folder [tools/firebase-workspace-sync](tools/firebase-workspace-sync) untuk upload perubahan file lokal ke Firestore.
+- Sync tool: watcher Node.js di folder [tools](tools) untuk upload perubahan file lokal ke Firestore.
 
 Alur kerja:
 
-1. Simpan source code demo di folder yang dipantau sync tool (default: folder_project di dalam sync tool).
+1. Simpan source code demo di folder yang dipantau sync tool (default: [tools/folder_project](tools/folder_project)).
 2. Jalankan sync tool agar perubahan file di-push ke Firestore.
 3. Buka web viewer (root project) untuk melihat update secara realtime.
 
 ## Struktur Folder
 
-- [apps/viewer/index.html](apps/viewer/index.html): layout utama viewer.
-- [apps/viewer/main.js](apps/viewer/main.js): logika explorer file, Monaco Editor, dan listener Firestore.
-- [apps/viewer/style.css](apps/viewer/style.css): styling UI viewer.
-- [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js): konfigurasi Firebase client (harus dibuat lokal, jangan di-commit).
-- [tools/firebase-workspace-sync](tools/firebase-workspace-sync): tool sinkronisasi folder lokal ke Firestore.
+- [apps/index.html](apps/index.html): layout utama viewer.
+- [apps/main.js](apps/main.js): logika explorer file, Monaco Editor, dan listener Firestore.
+- [apps/style.css](apps/style.css): styling UI viewer.
+- [apps/firebase-config.js](apps/firebase-config.js): konfigurasi Firebase client.
+- [tools/quick-sync.js](tools/quick-sync.js): script watcher sinkronisasi folder lokal ke Firestore.
+- [tools/folder_project](tools/folder_project): folder sumber default yang dibaca sync tool.
 
 ## Prasyarat
 
@@ -31,7 +32,7 @@ Alur kerja:
 
 ## Setup Viewer (Root)
 
-1. Buat/isi file [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) dengan format berikut:
+1. Buat/isi file [apps/firebase-config.js](apps/firebase-config.js) dengan format berikut:
 
 ```js
 export const firebaseConfig = {
@@ -44,7 +45,7 @@ export const firebaseConfig = {
 };
 ```
 
-2. Pastikan file [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) tetap di-ignore Git.
+2. Pastikan file [apps/firebase-config.js](apps/firebase-config.js) tetap di-ignore Git jika berisi credential sensitif.
 
 ## Jalankan Viewer
 
@@ -54,9 +55,12 @@ Lalu buka URL server di browser.
 
 Path default yang dipakai viewer adalah `folder_project`.
 
+Opsional: gunakan query string `?p=nama_path` untuk membuka dokumen lain.
+Contoh: `http://localhost:5500/apps/?p=folder_project`
+
 ## Setup & Jalankan Realtime Sync Tool
 
-Masuk ke folder [tools/firebase-workspace-sync](tools/firebase-workspace-sync) lalu:
+Masuk ke folder [tools](tools) lalu:
 
 ```bash
 npm install
@@ -64,7 +68,7 @@ npm run quick
 ```
 
 Setup service account detail tersedia di:
-- [tools/firebase-workspace-sync/README.md](tools/firebase-workspace-sync/README.md)
+- [tools/README.md](tools/README.md)
 
 ## Setup Deploy ke Surge
 
@@ -85,19 +89,19 @@ surge
 3. Deploy dari root project ke folder viewer:
 
 ```bash
-surge apps/viewer nama-domainmu.surge.sh
+surge apps nama-domainmu.surge.sh
 ```
 
 Contoh:
 
 ```bash
-surge apps/viewer uisi-pweb-2026.surge.sh
+surge apps uisi-pweb-2026.surge.sh
 ```
 
 4. Update deployment:
 
 ```bash
-surge apps/viewer uisi-pweb-2026.surge.sh
+surge apps uisi-pweb-2026.surge.sh
 ```
 
 5. Hapus deployment jika sudah tidak dipakai:
@@ -108,8 +112,8 @@ surge teardown uisi-pweb-2026.surge.sh
 
 Catatan penting:
 
-- Pastikan [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) sudah terisi valid sebelum deploy.
-- Jika deploy dari folder lain, gunakan path folder yang berisi [apps/viewer/index.html](apps/viewer/index.html).
+- Pastikan [apps/firebase-config.js](apps/firebase-config.js) sudah terisi valid sebelum deploy.
+- Jika deploy dari folder lain, gunakan path folder yang berisi [apps/index.html](apps/index.html).
 - Untuk custom domain, ikuti prompt Surge setelah proses publish.
 
 Dokumen Firestore default yang dipakai sync tool:
@@ -129,7 +133,7 @@ Contoh jika path `folder_project`, maka dokumen yang dibaca adalah:
 ## Catatan Keamanan
 
 - Jangan commit credential sensitif seperti Firebase service account.
-- Jangan publish nilai rahasia dari [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js) di repositori publik.
+- Jangan publish nilai rahasia dari [apps/firebase-config.js](apps/firebase-config.js) di repositori publik.
 
 ## Troubleshooting
 
@@ -140,4 +144,4 @@ Contoh jika path `folder_project`, maka dokumen yang dibaca adalah:
   - Pastikan sync tool berjalan.
   - Pastikan dokumen Firestore untuk path yang dibuka memang ada.
 - Jika listener gagal inisialisasi:
-  - Cek semua field wajib di [apps/viewer/firebase-config.js](apps/viewer/firebase-config.js).
+  - Cek semua field wajib di [apps/firebase-config.js](apps/firebase-config.js).
